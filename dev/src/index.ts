@@ -345,7 +345,7 @@ export class Firestore implements firestore.Firestore {
    * to work around a connection limit of 100 concurrent requests per client.
    * @private
    */
-  private _clientPool: ClientPool<GapicClient>;
+  private _clientPool: ClientPool<GapicClient> | undefined = undefined;
 
   /**
    * The configuration options for the GAPIC client.
@@ -472,34 +472,6 @@ export class Firestore implements firestore.Firestore {
       backoffFactor: retryConfig.retry_delay_multiplier,
     };
 
-    const maxIdleChannels =
-      this._settings.maxIdleChannels === undefined
-        ? DEFAULT_MAX_IDLE_CHANNELS
-        : this._settings.maxIdleChannels;
-    this._clientPool = new ClientPool<GapicClient>(
-      MAX_CONCURRENT_REQUESTS_PER_CLIENT,
-      maxIdleChannels,
-      /* clientFactory= */ () => {
-        let client: GapicClient;
-
-        if (this._settings.ssl === false) {
-          const grpcModule = this._settings.grpc ?? grpc;
-          const sslCreds = grpcModule.credentials.createInsecure();
-
-          client = new module.exports.v1({
-            sslCreds,
-            ...this._settings,
-          });
-        } else {
-          client = new module.exports.v1(this._settings);
-        }
-
-        logger('Firestore', null, 'Initialized Firestore GAPIC Client');
-        return client;
-      },
-      /* clientDestructor= */ client => client.close()
-    );
-
     logger('Firestore', null, 'Initialized Firestore');
   }
 
@@ -529,6 +501,39 @@ export class Firestore implements firestore.Firestore {
     this.validateAndApplySettings(mergedSettings);
     this._settingsFrozen = true;
   }
+
+  // Client pool is delay-loaded because it pulls in all of google-gax.
+  // To work around this we leave this unexported.
+  /** @internal */
+  getClientPool(): ClientPool<GapicClient> { 
+    if (!this._clientPool) {
+      this._clientPool = new ClientPool<GapicClient>(
+        MAX_CONCURRENT_REQUESTS_PER_CLIENT,
+        this._settings.maxIdleChannels || DEFAULT_MAX_IDLE_CHANNELS,
+        /* clientFactory= */ () => {
+          let client: GapicClient;
+
+          if (this._settings.ssl === false) {
+            const grpcModule = this._settings.grpc ?? grpc;
+            const sslCreds = grpcModule.credentials.createInsecure();
+
+            client = new module.exports.v1({
+              sslCreds,
+              ...this._settings,
+            });
+          } else {
+            client = new module.exports.v1(this._settings);
+          }
+
+          logger('Firestore', null, 'Initialized Firestore GAPIC Client');
+          return client;
+        },
+        /* clientDestructor= */ client => client.close()
+      );
+    }
+    return this._clientPool;
+  }
+
 
   private validateAndApplySettings(settings: firestore.Settings): void {
     if (settings.projectId !== undefined) {
@@ -1270,7 +1275,7 @@ export class Firestore implements firestore.Firestore {
           `${this.bulkWritersCount} open BulkWriter instances.`
       );
     }
-    return this._clientPool.terminate();
+    return this.getClientPool().terminate();
   }
 
   /**
@@ -1301,7 +1306,7 @@ export class Firestore implements firestore.Firestore {
 
     if (this._projectId === undefined) {
       try {
-        this._projectId = await this._clientPool.run(requestTag, gapicClient =>
+        this._projectId = await this.getClientPool().run(requestTag, gapicClient =>
           gapicClient.getProjectId()
         );
         logger(
@@ -1541,7 +1546,7 @@ export class Firestore implements firestore.Firestore {
   ): Promise<Resp> {
     const callOptions = this.createCallOptions(methodName, retryCodes);
 
-    return this._clientPool.run(requestTag, async gapicClient => {
+    return this.getClientPool().run(requestTag, async gapicClient => {
       try {
         logger('Firestore.request', requestTag, 'Sending request: %j', request);
         const [result] = await (
@@ -1587,7 +1592,7 @@ export class Firestore implements firestore.Firestore {
     return this._retry(methodName, requestTag, () => {
       const result = new Deferred<Duplex>();
 
-      this._clientPool.run(requestTag, async gapicClient => {
+      this.getClientPool().run(requestTag, async gapicClient => {
         logger(
           'Firestore.requestStream',
           requestTag,

@@ -86,7 +86,7 @@ export function verifyInstance(firestore: Firestore): Promise<void> {
   // verifying that all operations have finished executing.
   return new Promise<void>(resolve => {
     setTimeout(() => {
-      expect(firestore['_clientPool'].opCount).to.equal(0);
+      expect(firestore.getClientPool().opCount).to.equal(0);
       resolve();
     }, 10);
   });
