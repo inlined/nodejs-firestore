@@ -22,7 +22,8 @@ import * as proto from '../protos/firestore_v1_proto_api';
 
 import {ExponentialBackoff} from './backoff';
 import {DocumentSnapshot} from './document';
-import {Firestore, WriteBatch} from './index';
+import {Firestore} from './index';
+import {WriteBatch} from './write-batch';
 import {logger} from './logger';
 import {FieldPath, validateFieldPath} from './path';
 import {

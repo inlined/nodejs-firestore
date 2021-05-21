@@ -23,10 +23,12 @@ import {
   Firestore,
   setLogFunction,
   Timestamp,
-  WriteBatch,
-  WriteResult,
   QueryDocumentSnapshot,
 } from '../src';
+import {
+  WriteBatch,
+  WriteResult,
+} from "../src/write-batch";
 import {
   ApiOverride,
   createInstance,

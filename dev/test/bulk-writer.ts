@@ -20,12 +20,12 @@ import {GoogleError, Status} from 'google-gax';
 
 import * as proto from '../protos/firestore_v1_proto_api';
 import {
-  BulkWriter,
   Firestore,
   setLogFunction,
   Timestamp,
-  WriteResult,
 } from '../src';
+import {BulkWriter} from "../src/bulk-writer";
+import {WriteResult} from "../src/write-batch";
 import {
   DEFAULT_BACKOFF_FACTOR,
   DEFAULT_BACKOFF_INITIAL_DELAY_MS,

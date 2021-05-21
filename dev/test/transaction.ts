@@ -22,7 +22,8 @@ import * as through2 from 'through2';
 
 import * as proto from '../protos/firestore_v1_proto_api';
 import * as Firestore from '../src';
-import {DocumentReference, FieldPath, Transaction} from '../src';
+import {DocumentReference, FieldPath} from '../src';
+import {Transaction} from "../src/transaction";
 import {setTimeoutHandler} from '../src/backoff';
 import {
   ApiOverride,

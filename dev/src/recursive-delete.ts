@@ -18,13 +18,13 @@ import * as firestore from '@google-cloud/firestore';
 import * as assert from 'assert';
 
 import Firestore, {
-  BulkWriter,
   CollectionReference,
   DocumentReference,
   FieldPath,
   Query,
   QueryDocumentSnapshot,
 } from '.';
+import { BulkWriter } from './bulk-writer';
 import {Deferred, wrapError} from './util';
 import {GoogleError, Status} from 'google-gax';
 import {BulkWriterError} from './bulk-writer';

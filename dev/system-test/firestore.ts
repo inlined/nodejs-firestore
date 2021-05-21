@@ -32,8 +32,8 @@ import {
   QueryDocumentSnapshot,
   setLogFunction,
   Timestamp,
-  WriteResult,
 } from '../src';
+import {WriteResult} from "../src/write-batch";
 import {autoId, Deferred} from '../src/util';
 import {TEST_BUNDLE_ID, verifyMetadata} from '../test/bundle';
 import {
@@ -472,7 +472,7 @@ describe('DocumentReference class', () => {
       .then(() => {
         return ref.get();
       })
-      .then(doc => {
+      .then((doc: any) => {
         const data = doc.data()!;
         expect(data.pathValue.path).to.equal(
           allSupportedTypesObject.pathValue.path
@@ -493,7 +493,7 @@ describe('DocumentReference class', () => {
       .then(() => {
         return ref.get();
       })
-      .then(doc => {
+      .then((doc: any) => {
         const actualValue = doc.data()!.nanValue;
         expect(actualValue).to.be.a('number');
         expect(actualValue).to.be.NaN;
@@ -2154,7 +2154,7 @@ describe('Transaction class', () => {
             .getAll(ref1, {fieldMask: ['foo']})
             .then(([doc]) => doc);
         })
-        .then(doc => {
+        .then((doc: any) => {
           expect(doc.data()).to.deep.equal({foo: 'a'});
         });
     });
@@ -2173,7 +2173,7 @@ describe('Transaction class', () => {
             .getAll(...[ref1, ref2], {fieldMask: ['f']})
             .then(docs => docs);
         })
-        .then(docs => {
+        .then((docs: any): void => {
           expect(docs[0].data()).to.deep.equal({f: 'a'});
           expect(docs[1].data()).to.deep.equal({f: 'a'});
         });
@@ -2186,7 +2186,7 @@ describe('Transaction class', () => {
     await ref1.set(new Post('post1', 'author1'));
     await ref2.set(new Post('post2', 'author2'));
 
-    const docs = await firestore.runTransaction(updateFunction => {
+    const docs: any = await firestore.runTransaction(updateFunction => {
       return updateFunction.getAll(ref1, ref2);
     });
 
@@ -2201,7 +2201,7 @@ describe('Transaction class', () => {
       await txn.get(ref);
       await txn.set(ref, new Post('new post', 'author'));
     });
-    const doc = await ref.get();
+    const doc: any = await ref.get();
     expect(doc.data()!.toString()).to.equal('new post, by author');
   });
 
@@ -2257,7 +2257,7 @@ describe('Transaction class', () => {
       .then(() => {
         return ref.get();
       })
-      .then(doc => {
+      .then((doc: any) => {
         expect(doc.data()).to.deep.equal({
           boo: ['ghost'],
           moo: 'cow',

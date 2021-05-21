@@ -47,7 +47,7 @@ import {
   mergeResponses,
   successResponse,
 } from './bulk-writer';
-import {MAX_REQUEST_RETRIES} from '../src';
+import {MAX_REQUEST_RETRIES} from '../src/rpc-client-impl';
 
 import api = google.firestore.v1;
 import {MAX_PENDING_OPS, REFERENCE_NAME_MIN_ID} from '../src/recursive-delete';
